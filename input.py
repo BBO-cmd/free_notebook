@@ -31,3 +31,51 @@ for list in todo_list:
     print(f"---------    {list}    -------------------")
     for i in enumerate(todo_list[list]):
         print(i,'\n')
+
+
+##############################################
+#    Thoughts, Plans... on a daily basis 
+##############################################
+
+#230708
+# 1. 운동은 후회할 확률이 0에 수렴하는 매우 희소한 일 중 하나임. 확률적으로 따졌을때 이만큼 승산있는 일을 찾기는 힘들다. 그러니까 오늘도 일단 하고본다. 예외는 없다.
+# 2. 딥러닝 논문 일단 혼자라도 시작하기: 이미 익숙한 yolo부터 보면 쉽게 볼 수 있을듯. 일단 지금 관심있는 CV부터 시작
+# 3. 영어: 일단 "단어들" 다시 reach out해서 refresh memory할 필요가 있음 
+
+
+#230709: Summarize sentences above using transformers
+from transformers import T5Tokenizer, T5ForConditionalGeneration
+
+# Load pre-trained model and tokenizer
+model_name = 't5-base'
+tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+
+# Example sentences
+sentences = [
+    "This is the first sentence.",
+    "Here's the second sentence.",
+    "And finally, the third sentence."
+]
+
+# Tokenize and encode the sentences
+inputs = tokenizer.batch_encode_plus(
+    sentences,
+    padding='longest',
+    truncation=True,
+    return_tensors='pt'
+)
+
+# Generate summaries
+outputs = model.generate(
+    inputs['input_ids'],
+    num_beams=4,
+    max_length=100,
+    early_stopping=True
+)
+
+# Decode and print the summaries
+summaries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+for summary in summaries:
+    print(summary)
+
