@@ -42,10 +42,10 @@ for list in todo_list:
 # 2. 딥러닝 논문 일단 혼자라도 시작하기: 이미 익숙한 yolo부터 보면 쉽게 볼 수 있을듯. 일단 지금 관심있는 CV부터 시작
 # 3. 영어: 일단 "단어들" 다시 reach out해서 refresh memory할 필요가 있음 
 
-
+###############################
 #230709: Summarize sentences above using transformers
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-
+'''
 # Load pre-trained model and tokenizer
 model_name = 't5-base'
 tokenizer = T5Tokenizer.from_pretrained(model_name)
@@ -78,4 +78,72 @@ outputs = model.generate(
 summaries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
 for summary in summaries:
     print(summary)
+'''
+
+#############################
+#230710 continue to use transformers: Colab에서 실행
+
+## BERT tokenizer가 하는 일: 
+from transformers import BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+
+print("Vocabulary size:", tokenizer.vocab_size)
+print("Token IDs example:", tokenizer.encode("Hello, how are you?"))
+print("Decoded example:", tokenizer.decode([101, 7592, 1010, 2129, 2024, 2017, 1029]))
+
+# Vocabulary size: 30522
+# Token IDs example: [101, 7592, 1010, 2129, 2024, 2017, 1029, 102]
+# Decoded example: [CLS] hello, how are you? -tonekize-> ['hello', ',', 'how', 'are', 'you', '?']
+# [101] represents the [CLS] token, which indicates the start of the sequence.
+
+sum=0
+t_list=tokenizer.encode("Hello, how are you?")
+for i in t_list:
+  sum+=i
+print("\nSUM: ",sum) # 16004, != 30522(voca size of bert tok.)
+## tokenizer의 vocabulary size는 total 몇개의 tokekn을 cover하는지 그 coverage이고, 문장과는 무관
+
+
+# BERT, GPT... 등의 Language model은 기본적으로 단어 기준 tokenize-> encoding해서 numerical하게 만든 다음
+# "TOKEN들간의 relationships and dependencies를", "Attention mechanism"을 통해 capture함
+# token들간의 관계: ex) 인접하여/멀리 얼마나 자주 나왔는지(Dependencies), 대명사 등에 의해 재언급되는 경우 등 
+
+
+# summarizer(bert-base-uncase)/ tokenizer(facebook/bart-large-cnn) 사용 시도
+pip install transformers
+import numpy as np
+
+from transformers import pipeline, AutoTokenizer
+
+def summarize_sentences(sentences):
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    summaries = []
+
+    for sentence in sentences:
+        tokens = tokenizer.encode(sentence, truncation=True, padding=True, max_length=512, return_tensors="pt")
+        tokens = tokens.tolist()
+        summary = summarizer(tokens, max_length=50, min_length=10, do_sample=False)
+        print(summary)
+        deoced_tokens = tokenizer.decode(tokens)
+        summaries.append(summary[0]['summary_text'])
+
+    return summaries
+
+# Example usage
+sentences = [
+    "The weather today is quite sunny and warm.",
+    "I had a delicious dinner with my friends last night.",
+    "The new movie that came out is getting great reviews."
+]
+
+summary_results = summarize_sentences(sentences)
+
+for i in range(len(sentences)):
+    print("Original sentence:", sentences[i])
+    print("Summary:", summary_results[i])
+    print()
+
+
 
