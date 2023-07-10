@@ -116,27 +116,30 @@ import numpy as np
 
 from transformers import pipeline, AutoTokenizer
 
+##summarizer는 tokeizer 필요없이 그냥 plain text를 바로 summarizer에 넣으면 됨
 def summarize_sentences(sentences):
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    #tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
     summaries = []
 
     for sentence in sentences:
-        tokens = tokenizer.encode(sentence, truncation=True, padding=True, max_length=512, return_tensors="pt")
-        tokens = tokens.tolist()
-        summary = summarizer(tokens, max_length=50, min_length=10, do_sample=False)
-        print(summary)
-        deoced_tokens = tokenizer.decode(tokens)
+        #tokens = tokenizer.encode(sentence, truncation=True, padding=True, max_length=512, return_tensors="pt")
+        #tokens = tokens.tolist()
+        summary = summarizer(sentence, max_length=10, min_length=5, do_sample=False)
+        #deoced_tokens = tokenizer.decode(tokens)
         summaries.append(summary[0]['summary_text'])
 
     return summaries
 
-# Example usage
+# 내 문장들
 sentences = [
-    "The weather today is quite sunny and warm.",
-    "I had a delicious dinner with my friends last night.",
-    "The new movie that came out is getting great reviews."
-]
+# 1. 운동은 후회할 확률이 0에 수렴하는 매우 희소한 일 중 하나임. 확률적으로 따졌을때 이만큼 승산있는 일을 찾기는 힘들다. 그러니까 오늘도 일단 하고본다. 예외는 없다.
+"Exercise is one of the hardest things of which the probability of regret converges to 0. It's hard to find another one that has higher probability so I'm gonna do this today, too. No exceptions."
+# 2. 딥러닝 논문 일단 혼자라도 시작하기: 이미 익숙한 yolo부터 보면 쉽게 볼 수 있을듯. 일단 지금 관심있는 CV부터 시작
+, "Getting started on reading papers about Deep Learning. It would be better to start with yolo, which is already famailiar. Let me cover from CV first."
+# 3. 영어: 일단 "단어들" 다시 reach out해서 refresh memory할 필요가 있음 
+, "Firstly, I have to refresh my memory by reaching out the vocabularies."
+              ]
 
 summary_results = summarize_sentences(sentences)
 
@@ -146,4 +149,14 @@ for i in range(len(sentences)):
     print()
 
 
+##결과: 
+#Original sentence: Exercise is one of the hardest things of which the probability of regret converges to 0. It's hard to find another one that has higher probability so I'm gonna do this today, too. No exceptions.
+#Summary: Exercise is one of the hardest 
 
+#Original sentence: Getting started on reading papers about Deep Learning. It would be better to start with yolo, which is already famailiar. Let me cover from CV first.
+#Summary: Getting started on reading papers about Deep
+
+#Original sentence: Firstly, I have to refresh my memory by reaching out the vocabularies.
+#Summary: "I have to refresh my memory
+
+## 문제: 이딴식으로 요약됨ㅋㅎ 요약이 아니라 그냥 잘림
