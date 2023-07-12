@@ -134,10 +134,10 @@ def summarize_sentences(sentences):
 # 내 문장들
 sentences = [
 # 1. 운동은 후회할 확률이 0에 수렴하는 매우 희소한 일 중 하나임. 확률적으로 따졌을때 이만큼 승산있는 일을 찾기는 힘들다. 그러니까 오늘도 일단 하고본다. 예외는 없다.
-"Exercise is one of the hardest things of which the probability of regret converges to 0. It's hard to find another one that has higher probability so I'm gonna do this today, too. No exceptions."
+"Exercise is one of the rarest tasks of which the probability of regretting converges to 0. It's hard to find tasks that have less probability of regretting, so I'm gonna do this today, too. No exceptions."
 # 2. 딥러닝 논문 일단 혼자라도 시작하기: 이미 익숙한 yolo부터 보면 쉽게 볼 수 있을듯. 일단 지금 관심있는 CV부터 시작
-, "Getting started on reading papers about Deep Learning. It would be better to start with yolo, which is already famailiar. Let me cover from CV first."
-# 3. 영어: 일단 "단어들" 다시 reach out해서 refresh memory할 필요가 있음 
+, "Getting started on reading papers about Deep Learning. It would be better to start with yolo, which I am already famailiar with. Let me cover CV first."
+# 3. 영어: 일단 "단어들" 다시 reach out해서 refresh memory할 필요가 있음
 , "Firstly, I have to refresh my memory by reaching out the vocabularies."
               ]
 
@@ -159,4 +159,60 @@ for i in range(len(sentences)):
 #Original sentence: Firstly, I have to refresh my memory by reaching out the vocabularies.
 #Summary: "I have to refresh my memory
 
-## 문제: 이딴식으로 요약됨ㅋㅎ 요약이 아니라 그냥 잘림
+## 문제: 이런식으로 요약이 아니라 그냥 잘림ㅋㅎ
+
+
+##################################
+#230712 troubleshooting previous problems
+
+##tokenize
+origin = "The technology industry is constantly evolving and innovating. New advancements and breakthroughs are made every day. One of the most exciting recent developments is the rise of artificial intelligence and machine learning. These technologies have the potential to revolutionize various fields such as healthcare, finance, and transportation. They can automate tasks, improve decision-making processes, and unlock new insights from data. As the adoption of AI and ML continues to grow, it is important to stay informed about the latest trends and applications."
+from transformers import BertTokenizer
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+tokens=tokenizer.encode(origin)
+print("num of tokens: ", len(tokens) #before summarize: 103 tokens
+
+
+##summarize
+from transformers import pipeline
+
+# 일케 하면 pipeline에서 summarization에 적합한 pre-trained model을 자동으로 선택함: t5-base 등
+summarizer = pipeline("summarization")
+
+#origin(str)자리에 origin(str)들의 list로 넣으면 저절로 summary list의 dictionary도 len(text_list)만큼 생김
+origin=[ origin, origin, origin ]
+print("original text x3:" , origin)
+
+summary= summarizer(origin, max_length = 100, min_length=30)
+print(summary)    #[ {'summary_text':'~~~~'}, {'summary_text':'~~~'},{'summary_text':} ]
+#key가 'summary_text"인 dictionary가 len(원문_list)만큼 생김
+
+#after summarization: 45 tokens(summaized된거 맞음)
+summary_1st = summary[0]['summary_text']
+len(tokenizer.encode(summary_1st))
+
+
+
+##apply summarizer to my sentences
+sentences = [
+"Exercise is one of the rarest tasks of which the probability of regretting converges to 0. It's hard to find tasks that have less probability of regretting, so I'm gonna do this today, too. No exceptions."
+, "Getting started on reading papers about Deep Learning. It would be better to start with yolo, which I am already famailiar with. Let me cover CV first."
+, "Firstly, I have to refresh my memory by reaching out the vocabularies."
+]
+
+#origin txt가 너무 짧아서 summay가 되는지 안되는지 판단불가 -> len 100+ words 로 extend
+#done by chatGPT
+extended_sentences =["Engaging in physical exercise is undeniably one of the rarest and most rewarding tasks in life, with a probability of experiencing regret that effortlessly approaches zero. It is an arduous endeavor to come across activities that offer such an incredibly low likelihood of subsequent remorse, which is precisely why I am resolute in dedicating myself to this pursuit today, as I have done on countless occasions before. Regardless of circumstances or external factors, I am unwavering in my commitment to seize this opportunity and partake in the revitalizing power of exercise without making any exceptions or allowances for any excuse that might arise.",
+  "aaaaaa",
+  "bbbbbb" 
+]
+
+
+my_summary=summarizer(extended_sentences, max_length=50, min_length=0)
+print(my_summary)
+#somehow summarize 완료됨(일단 문장 하나로 확인)
+# 결과: 'Engaging in physical exercise is undeniably one of the rarest and most rewarding tasks in life, with a probability of experiencing regret that effortlessly approaches zero . Regardless of circumstances or external factors, I am unwavering in my commitment to seize this'
+# 핵심만 잘 summarize 됨
+# one step further: 내 원래 txt와 extended ver., 그리고 summarized txt를 비교해볼 수 있음
+
+
