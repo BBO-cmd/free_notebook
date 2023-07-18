@@ -216,3 +216,32 @@ print(my_summary)
 # one step further: 내 원래 txt와 extended ver., 그리고 summarized txt를 비교해볼 수 있음
 
 
+##20230718 MLP model build
+
+#Sequential() 사용하여 layer 쌓기
+from keras.models import Sequential
+from keras.layers import Dense
+
+
+##모델 만드는 방법 1: Sequential
+#1. load model
+model=Sequential()
+#2. input layer ( unit은 node 개수임 )
+model.add(Dense(units = 64, activation = 'relu', input-dim=100))
+#3. hidden layer
+model.add(Dense(units = 32, activation = 'relu'))
+#4. output layer
+model.add(Dense(units=10, activation ='softmax'))
+#5. model compile
+model.compile(loss='categorical_crossentropy'. optimizer='adam', metrics=['accuracy'])
+
+
+##또는
+model = Sequential([
+    Dense(units=64, activation = 'relu', input_dim=100),
+    ... hidden, output layer 추가
+])
+                
+
+## 모델 만드는 방법2: Functional API
+
