@@ -236,12 +236,76 @@ model.add(Dense(units=10, activation ='softmax'))
 model.compile(loss='categorical_crossentropy'. optimizer='adam', metrics=['accuracy'])
 
 
-##또는
-model = Sequential([
-    Dense(units=64, activation = 'relu', input_dim=100),
-    ... hidden, output layer 추가
+## 또는 (Flatten 부터) 
+model = tf.keras.Sequential([
+    tf.keras.layers.Flatten()
+    tf.keras.layers.Dense(64, activation = 'relu'),
+    tf.keras.layers.Dense(10, activation = 'softmax')
 ])
-                
+model.compile(loss='', optimizer='',metrics=[])
 
-## 모델 만드는 방법2: Functional API
 
+##230720 Model save and load
+
+# 1. weight만 저장하기(model.save_weights): 
+model.save_weights(param_paths) # param_paths는 parameter가 담긴 checkpoint 파일(.ckpt)이 저장되는 경로
+# 같은 형태의 model을 새로 build한 후 저장된 weight 불러오기
+model_2=Sequential([...])
+model_2.compile(loss='', optimizer='', metrics=[])
+
+model_2.load_weights(param.path) #param_path는 ckpt파일의 경로임
+
+
+#2. model 자체를 저장하기(model.save(path to save) 또는 tf.keras.models.save_model(model, path to save) ) : model, weight, compile된것을 통째로 저장
+model_path = ./your/directory # 모델 저장경로
+
+model.save(model_path)
+#또는 
+tf.keras.models.save_model(model,model_path)
+
+# 저장된 모델을 load함(models.load_model(path of the model))
+loaded_model = tf.keras.models.load_model(model_path)
+
+
+#3. h5로 저장할 수도 있음
+
+
+
+
+## training 중간에 특정 함수를 넣고싶을 때: Callback 함수 활용(ex. 끝날때마다 ckpt저장 및 learning rate 조정, early stopping 등)
+# 1. epoch마다 ckpt 파일 저장하기
+ckpt_dir = os.path.join(save_root, 'ckpt저장할 새폴더명')
+ckpt_prefix = os.path.join(checkpoint_dir, f'ckpt_{epoch}')
+
+#2. learning rate shceduler
+def decay(epoch):
+    if epoch<3:
+        return 1e-3
+    elif 3 =< epoch and epoch<7:
+        return 1e-4
+    else:
+        return 1e-5
+
+
+import match  
+def exp_decay(epoch):  
+    if epoch<3:
+        return 0.001
+    else:
+        return 0.001 * math.exp(0.1*(3-epoch))
+
+
+
+#callbacks=[callback_f1, callback_f2,... ]넣어놓고 학습시에 model.fit(    ,   ,callbacks)해서 사용함
+callbacks =[
+    tf.keras.callbacks.ModelCheckpoint(filepath=, save_weights_only=True),
+    tf.keras.callbacks.LearningTateScheduler(decay),
+    tf.keras.callbacks.EarlyStopping(monitor='loss', patence=3)
+    PrintLR()
+]
+
+
+##TensorBoard
+#1. callback에 tensorboard넣기
+log_dir='경로'
+tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir, histogram_freq=1)
