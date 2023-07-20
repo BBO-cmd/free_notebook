@@ -309,3 +309,29 @@ callbacks =[
 #1. callback에 tensorboard넣기
 log_dir='경로'
 tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir, histogram_freq=1)
+
+
+
+##convolution 
+#1. Datashape: 28*28 에다가 channel을 추가해주어야 함(np.expand_dim)
+def expand(input_img):
+    return np.expand_dim(input_img, axis=-1)
+
+#2. 간단 convolution layer로 model 구성
+# Conv2D:
+#MaxPool2D:
+
+model.tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(filter=64, kernel_size=(3,3), padding='same', activation ='relu', 
+                           input_shape=x_train.shape[1:]), #input_shape에서 이미지 번호 제외
+    tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2)),
+    tf.keras.layers.Conv2D(filter=128, kernel_size=(3,3), padding='same', activation ='relu'),
+    tf.keras.layers.MaxPool2D(pool_size=(2,2), strides=(2,2)),
+    tf.keras.layers.Flatten(), #1D array로 펼쳐줌
+    tf.keras.layers.Dense(10, activation='softmax')#fully connectd layer
+])
+
+#컴파일
+loss_fn='cross...'
+optimizer='adam'
+
